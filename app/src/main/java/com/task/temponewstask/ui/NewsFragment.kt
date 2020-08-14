@@ -1,8 +1,10 @@
 package com.task.temponewstask.ui
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.TextView.OnEditorActionListener
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -65,6 +67,7 @@ class NewsFragment : BaseFragment() {
         if (currentQuery.isEmpty() == false) {
             articles.clear()
             pageNumber = 1
+            hideKeyboard()
             callWebApi()
         } else {
             Toast.makeText(
@@ -72,6 +75,16 @@ class NewsFragment : BaseFragment() {
                 getString(R.string.please_enter_search_query),
                 Toast.LENGTH_LONG
             ).show()
+        }
+    }
+
+    private fun hideKeyboard() {
+
+        val view = this.activity?.currentFocus
+        view?.let { v ->
+            val imm =
+                activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            imm?.hideSoftInputFromWindow(v.windowToken, 0)
         }
     }
 
