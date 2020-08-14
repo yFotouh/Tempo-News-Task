@@ -2,15 +2,18 @@ package com.task.temponewstask.ui
 
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.widget.TextView.OnEditorActionListener
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.task.temponewstask.R
 import com.task.temponewstask.model.dto.response.Articles
-import com.task.temponewstask.ui.adapter.NewsAdapter
 import com.task.temponewstask.ui.adapter.INewsAction
+import com.task.temponewstask.ui.adapter.NewsAdapter
+import com.task.temponewstask.ui.adapter.PaginationListener
 import com.task.temponewstask.ui.base.BaseFragment
 import com.task.temponewstask.viewmodel.NewsViewModel
 import kotlinx.android.synthetic.main.fragment_news.*
@@ -29,11 +32,11 @@ class NewsFragment : BaseFragment() {
 
 
     val newsViewModel: NewsViewModel by viewModel()
-    private lateinit var viewAdapter: RecyclerView.Adapter<*>
+    private lateinit var viewAdapter: NewsAdapter
+    private var pageNumber: Int = 1
     private var articles = ArrayList<Articles>()
-
-    //    lateinit var mainBinding: FragmentWeatherBinding
-
+    private var currentQuery: String = ""
+    private var lastPage: Boolean = true
     override fun getLayoutId(): Int {
         return R.layout.fragment_news
     }
@@ -45,16 +48,30 @@ class NewsFragment : BaseFragment() {
     }
 
     private fun setListeners() {
+        ed_search.setOnEditorActionListener(OnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                handleSearch()
+                return@OnEditorActionListener true
+            }
+            false
+        })
         iv_search.setOnClickListener {
             handleSearch()
         }
     }
 
     private fun handleSearch() {
-        var value = ed_search.text.toString()
-        if (value.isEmpty() == false) {
+        currentQuery = ed_search.text.toString()
+        if (currentQuery.isEmpty() == false) {
             articles.clear()
-            callWebApi(value)
+            pageNumber = 1
+            callWebApi()
+        } else {
+            Toast.makeText(
+                activity,
+                getString(R.string.please_enter_search_query),
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 
@@ -80,15 +97,32 @@ class NewsFragment : BaseFragment() {
 
             })
         var linearLayoutManager = LinearLayoutManager(activity)
-        rv_cities.layoutManager = linearLayoutManager
-        rv_cities.adapter = viewAdapter
+        rv_news.layoutManager = linearLayoutManager
+        rv_news.adapter = viewAdapter
+        rv_news.addOnScrollListener(object : PaginationListener(linearLayoutManager) {
+
+
+            override fun isLastPage(): Boolean {
+                return lastPage
+            }
+
+            override fun loadMoreItems() {
+                pageNumber++
+                callWebApi()
+            }
+
+            override fun isLoading(): Boolean {
+                return newsViewModel.progressVisibility.value!!
+            }
+        })
     }
 
-    private fun callWebApi(query: String) {
+    private fun callWebApi() {
 
-        newsViewModel.getNews(query).observe(viewLifecycleOwner, Observer {
+        newsViewModel.getNews(currentQuery, pageNumber).observe(viewLifecycleOwner, Observer {
             articles.addAll(it.articles)
-            refreshAdapter()
+            lastPage = articles.size == it.totalResults
+            viewAdapter.addItems(it.articles)
         })
     }
 

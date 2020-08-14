@@ -72,6 +72,11 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
         return articles.size();
     }
 
+    public void addItems(List<Articles> articles) {
+        articles.addAll(articles);
+        notifyDataSetChanged();
+    }
+
     public class NewsViewHolder extends RecyclerView.ViewHolder {
         public TextView tv_article_title;
         public TextView tv_article_date;

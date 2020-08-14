@@ -18,11 +18,11 @@ class NewsViewModel(newsRepository: NewsRepository) : BaseViewModel() {
         newsRepositoryImpl = newsRepository
     }
 
-    fun getNews(query: String): LiveData<NewsResponse> {
+    fun getNews(query: String, pageNumber: Int): LiveData<NewsResponse> {
 
         coroutineScope.launch(Dispatchers.Main) {
             progressVisibility.value = true
-            var newsResponse = fetchNewsByQuery(query)
+            var newsResponse = fetchNewsByQuery(query, pageNumber)
             mutableLiveData.value = newsResponse
             progressVisibility.postValue(false)
         }
@@ -30,14 +30,12 @@ class NewsViewModel(newsRepository: NewsRepository) : BaseViewModel() {
 
     }
 
-    suspend fun fetchNewsByQuery(query: String): NewsResponse {
+    suspend fun fetchNewsByQuery(query: String, pageNumber: Int): NewsResponse {
         return withContext(Dispatchers.IO)
         {
-            newsRepositoryImpl?.getNewsData(query)
+            newsRepositoryImpl?.getNewsData(query, pageNumber)
         }!!
     }
-
-
 
 
 }

@@ -7,4 +7,5 @@
     <string name="city_already">City already entered</string>
     <string name="go_to_source">Go to source</string>
     <string name="search_news">Search news</string>
+    <string name="please_enter_search_query">Please Enter Search Query</string>
 </resources>

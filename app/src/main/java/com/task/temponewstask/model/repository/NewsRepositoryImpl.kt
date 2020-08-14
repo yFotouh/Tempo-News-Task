@@ -5,8 +5,8 @@ import com.task.temponewstask.network.Api
 
 class NewsRepositoryImpl : BaseRepository(), NewsRepository {
 
-    override suspend fun getNewsData(city: String): NewsResponse {
-        return Api.getApiClientKt().getNews(city)
+    override suspend fun getNewsData(query: String,pageNumber : Int): NewsResponse {
+        return Api.getApiClientKt().getNews(query,pageNumber)
     }
 
 }
