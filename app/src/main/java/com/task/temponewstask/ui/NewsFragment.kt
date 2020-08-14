@@ -1,0 +1,116 @@
+package com.task.temponewstask.ui
+
+import android.os.Bundle
+import android.view.View
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.task.temponewstask.R
+import com.task.temponewstask.model.dto.response.Articles
+import com.task.temponewstask.ui.adapter.NewsAdapter
+import com.task.temponewstask.ui.adapter.INewsAction
+import com.task.temponewstask.ui.base.BaseFragment
+import com.task.temponewstask.viewmodel.NewsViewModel
+import kotlinx.android.synthetic.main.fragment_news.*
+import org.koin.androidx.viewmodel.ext.android.viewModel
+
+
+// TODO: Rename parameter arguments, choose names that match
+// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+
+/**
+ * A simple [Fragment] subclass.
+ * Use the [NewsFragment.newInstance] factory method to
+ * create an instance of this fragment.
+ */
+class NewsFragment : BaseFragment() {
+
+
+    val newsViewModel: NewsViewModel by viewModel()
+    private lateinit var viewAdapter: RecyclerView.Adapter<*>
+    private var articles = ArrayList<Articles>()
+
+    //    lateinit var mainBinding: FragmentWeatherBinding
+
+    override fun getLayoutId(): Int {
+        return R.layout.fragment_news
+    }
+
+    override fun doOnViewCreated(view: View, savedInstanceState: Bundle?) {
+        observeProgressBar()
+        refreshAdapter()
+        setListeners()
+    }
+
+    private fun setListeners() {
+        iv_search.setOnClickListener {
+            handleSearch()
+        }
+    }
+
+    private fun handleSearch() {
+        var value = ed_search.text.toString()
+        if (value.isEmpty() == false) {
+            articles.clear()
+            callWebApi(value)
+        }
+    }
+
+    private fun observeProgressBar() {
+        newsViewModel.progressVisibility.observe(viewLifecycleOwner, Observer {
+            toggleProgressBarState(it)
+        })
+    }
+
+
+    private fun refreshAdapter() {
+
+        viewAdapter = NewsAdapter(
+            articles,
+            activity,
+            INewsAction {
+
+                findNavController().navigate(
+                    R.id.action_weatherFragment_to_newsDetailFragment,
+                    getBundle(it)
+                )
+
+
+            })
+        var linearLayoutManager = LinearLayoutManager(activity)
+        rv_cities.layoutManager = linearLayoutManager
+        rv_cities.adapter = viewAdapter
+    }
+
+    private fun callWebApi(query: String) {
+
+        newsViewModel.getNews(query).observe(viewLifecycleOwner, Observer {
+            articles.addAll(it.articles)
+            refreshAdapter()
+        })
+    }
+
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+    }
+
+    companion object {
+        /**
+         * Use this factory method to create a new instance of
+         * this fragment using the provided parameters.
+         *
+         * @param city Parameter 1.
+         * @param param2 Parameter 2.
+         * @return A new instance of fragment WeatherFragment.
+         */
+        // TODO: Rename and change types and number of parameters
+        @JvmStatic
+        fun newInstance() =
+            NewsFragment().apply {
+            }
+    }
+}
