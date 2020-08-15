@@ -10,7 +10,7 @@ interface ApiClientKt {
     suspend fun getNews(
         @Query("q") query: String,
         @Query("page") page: Int,
-        @Query("from") units: String = TimeHelper.getTodayTimeString(),
+        @Query("from") units: String = TimeHelper.todayTimeString,
         @Query("sortBy") sortBy: String = "publishedAt",
         @Query("pageSize") pageSize: Int = 20
     ): NewsResponse

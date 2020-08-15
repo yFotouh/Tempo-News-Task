@@ -99,7 +99,7 @@ class NewsFragment : BaseFragment() {
 
         viewAdapter = NewsAdapter(
             articles,
-            activity,
+            requireActivity(),
             INewsAction {
 
                 findNavController().navigate(
